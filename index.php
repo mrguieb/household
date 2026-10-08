@@ -1,0 +1,10 @@
+<?php require 'inc/lib.php';need();$p=db();
+$H=$p->query('SELECT * FROM households')->fetchAll();$n=count($H);
+$pop=array_sum(array_column($H,'total_members'));$C=[0,0,0];$B=[];$ty=[];$ow=[];$ph=0;$ch=0;
+foreach($H as $h){$k=(int)klass(total($h))[1][1];$C[$k]++;$b=$h['brgy'];$B[$b]??=[0,0,0,0];$B[$b][0]++;$B[$b][$k+1]++;$ty[$h['house_type']?:'Unspecified']=($ty[$h['house_type']?:'Unspecified']??0)+1;$ow[$h['house_own']?:'Unspecified']=($ow[$h['house_own']?:'Unspecified']??0)+1;$ph+=$h['philhealth']==='Yes';$ch+=$h['chronic']==='Yes';}
+function bars($a,$c=''){if(!$a)return;arsort($a);$m=max($a);foreach($a as $k=>$v)echo '<div class="row"><span>'.e($k).'</span><div class="bar '.$c.'" style="width:'.($v/$m*60).'%"></div><b>'.$v.'</b></div>';}
+head('Dashboard');?><h2>Dashboard</h2>
+<?php if(!$n):?><div class="card">No households recorded yet. <?php if(can('edit')):?><a class="btn p" href="form.php">Add the first household</a><?php endif;?></div><?php else:?>
+<div class="grid"><div class="card"><div class="big"><?=$n?></div>households</div><div class="card"><div class="big"><?=$pop?></div>residents covered</div><div class="card"><div class="big"><?=$C[2]?></div>indigent (<?=round($C[2]/$n*100)?>%)</div><div class="card"><div class="big"><?=round($ph/$n*100)?>%</div>with PhilHealth · <?=$ch?> with chronic illness</div></div>
+<div class="grid" style="margin-top:14px"><div class="card"><h3>Classification</h3><?php foreach(['Not indigent (0–5)','Low-income / Vulnerable (6–10)','Indigent (11–16)'] as $i=>$l)echo '<div class="row"><span>'.$l.'</span><div class="bar c'.$i.'" style="width:'.($C[$i]/$n*60).'%"></div><b>'.$C[$i].'</b></div>';?></div><div class="card"><h3>Housing type</h3><?php bars($ty);?></div><div class="card"><h3>House ownership</h3><?php bars($ow);?></div></div>
+<div class="card scroll" style="margin-top:14px"><h3>By barangay</h3><table><tr><th>Barangay</th><th>Households</th><th>Not indigent</th><th>Vulnerable</th><th>Indigent</th></tr><?php foreach($B as $k=>$v):?><tr><td><?=e($k)?></td><?php foreach($v as $x)echo "<td>$x</td>";?></tr><?php endforeach;?></table></div><?php endif;foot();
